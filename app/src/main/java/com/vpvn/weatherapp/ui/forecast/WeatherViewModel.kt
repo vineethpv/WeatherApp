@@ -32,7 +32,7 @@ class WeatherViewModel @Inject constructor(
     private fun loadWeather() {
         viewModelScope.launch {
             try {
-                val locationCoordinates = locationProvider.getLastLocation()
+                val locationCoordinates = locationProvider.getCurrentLocation()
                 val forecast = getFiveDayForecastUseCase(locationCoordinates)
                 _uiState.value = WeatherUiState.Success(forecast)
             } catch (e: Exception) {

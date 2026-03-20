@@ -4,13 +4,10 @@ import android.Manifest
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,19 +17,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cc.dvtweather.util.PermissionUtil
 import com.vpvn.weatherapp.R
-import com.vpvn.weatherapp.domain.model.WeatherType
 import com.vpvn.weatherapp.helper.LocationHelper.checkLocationSettings
 
 @Composable
-fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
+fun WeatherScreen(
+    viewModel: WeatherViewModel = hiltViewModel(),
+    paddingValues: PaddingValues
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = context as Activity
@@ -71,19 +68,10 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
 
             is WeatherUiState.Success -> {
                 val data = (state as WeatherUiState.Success).forecast
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(weatherBackground(data.first().weatherType))
-                        .padding(16.dp)
-                ) {
-                    data.forEach {
-                        Text(
-                            text = "${it.date} - ${it.temperature}°C",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
+                ForecastList(
+                    forecasts = data,
+                    contentPaddingValues = paddingValues
+                )
             }
 
             is WeatherUiState.Error -> {
@@ -150,6 +138,7 @@ private fun PermissionGate(
     }
 }
 
+/*
 @Composable
 fun weatherBackground(weatherType: WeatherType): Color {
     return when (weatherType) {
@@ -157,4 +146,4 @@ fun weatherBackground(weatherType: WeatherType): Color {
         WeatherType.CLOUDY -> Color(0xFF90A4AE)
         WeatherType.RAINY -> Color(0xFF546E7A)
     }
-}
+}*/

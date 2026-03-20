@@ -15,5 +15,6 @@ data class MainDto(
 )
 
 data class WeatherDto(
-    val main: String
+    val main: String,
+    val icon: String
 )

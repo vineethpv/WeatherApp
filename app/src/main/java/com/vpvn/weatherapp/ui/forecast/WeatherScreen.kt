@@ -68,10 +68,14 @@ fun WeatherScreen(
 
             is WeatherUiState.Success -> {
                 val data = (state as WeatherUiState.Success).forecast
-                ForecastList(
-                    forecasts = data,
-                    contentPaddingValues = paddingValues
-                )
+                WeatherBackground(
+                    weatherType = data.first().weatherType,
+                    content = {
+                        ForecastList(
+                            forecasts = data,
+                            contentPaddingValues = paddingValues
+                        )
+                    })
             }
 
             is WeatherUiState.Error -> {
@@ -137,13 +141,3 @@ private fun PermissionGate(
 
     }
 }
-
-/*
-@Composable
-fun weatherBackground(weatherType: WeatherType): Color {
-    return when (weatherType) {
-        WeatherType.SUNNY -> Color(0xFFFFC107)
-        WeatherType.CLOUDY -> Color(0xFF90A4AE)
-        WeatherType.RAINY -> Color(0xFF546E7A)
-    }
-}*/

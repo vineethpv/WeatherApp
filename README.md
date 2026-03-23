@@ -36,6 +36,7 @@ This project is an Android weather forecast application. The app retrieves and d
 - **Image Loading:** Coil
 - **Location Services:** FusedLocationProviderClient
 - **Testing:** JUnit, Turbine
+- **Test Coverage:** Jacoco
 
 ---
 

@@ -24,8 +24,12 @@ class WeatherViewModel @Inject constructor(
         when (intent) {
             WeatherIntent.LoadWeather,
             WeatherIntent.PermissionGranted -> loadWeather()
-            WeatherIntent.PermissionDenied -> _uiState.value = WeatherUiState.Error("Permission Denied")
-            WeatherIntent.LocationDisabled -> _uiState.value = WeatherUiState.Error("Location Disabled")
+
+            WeatherIntent.PermissionDenied -> _uiState.value =
+                WeatherUiState.Error(WeatherError.PermissionDenied)
+
+            WeatherIntent.LocationDisabled -> _uiState.value =
+                WeatherUiState.Error(WeatherError.LocationDisabled)
         }
     }
 
@@ -33,11 +37,14 @@ class WeatherViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = WeatherUiState.Loading
             try {
-                val locationCoordinates = locationProvider.getCurrentLocation()
+                val locationCoordinates = locationProvider.getCurrentLocation() ?: run {
+                    _uiState.value = WeatherUiState.Error(WeatherError.LocationUnavailable)
+                    return@launch
+                }
                 val forecast = getFiveDayForecastUseCase(locationCoordinates)
                 _uiState.value = WeatherUiState.Success(forecast)
             } catch (e: Exception) {
-                _uiState.value = WeatherUiState.Error(e.message ?: "Error")
+                _uiState.value = WeatherUiState.Error(WeatherError.UnKnown(e.message))
             }
         }
     }

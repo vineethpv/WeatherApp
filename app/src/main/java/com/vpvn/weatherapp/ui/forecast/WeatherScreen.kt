@@ -5,8 +5,13 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cc.dvtweather.util.PermissionUtil
@@ -44,7 +50,10 @@ fun WeatherScreen(
         }
     }
 
+    var retry by remember { mutableStateOf(false) }
+
     PermissionGate(
+        retryTrigger = retry,
         onGranted = {
             checkLocationSettings(
                 activity = activity,
@@ -60,7 +69,7 @@ fun WeatherScreen(
         onDenied = { viewModel.handleIntent(WeatherIntent.PermissionDenied) }
     ) {
         when (state) {
-            is WeatherUiState.Loading -> {
+            WeatherUiState.Loading -> {
                 CenteredContent {
                     CircularProgressIndicator()
                 }
@@ -79,10 +88,44 @@ fun WeatherScreen(
             }
 
             is WeatherUiState.Error -> {
+                val error = (state as WeatherUiState.Error).error
                 CenteredContent {
-                    Text(stringResource(R.string.something_went_wrong) + (state as WeatherUiState.Error).message)
+                    ErrorContent(error, onRetry = {
+                        when (error) {
+                            WeatherError.PermissionDenied,
+                            WeatherError.LocationDisabled -> {
+                                retry = !retry
+                            }
+                            WeatherError.LocationUnavailable -> viewModel.handleIntent(WeatherIntent.LoadWeather)
+                            is WeatherError.UnKnown -> viewModel.handleIntent(WeatherIntent.LoadWeather)
+                        }
+                    })
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ErrorContent(
+    error: WeatherError,
+    onRetry: () -> Unit
+) {
+    val message = when (error) {
+        WeatherError.LocationDisabled -> stringResource(R.string.location_is_turned_off)
+        WeatherError.LocationUnavailable -> stringResource(R.string.unable_to_get_location)
+        WeatherError.PermissionDenied -> stringResource(R.string.location_permission_denied)
+        is WeatherError.UnKnown -> error.message ?: stringResource(R.string.something_went_wrong)
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = message,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(onClick = onRetry) {
+            Text(stringResource(R.string.retry))
         }
     }
 }
@@ -99,28 +142,26 @@ fun CenteredContent(content: @Composable () -> Unit) {
 
 @Composable
 private fun PermissionGate(
+    retryTrigger: Boolean,
     onGranted: () -> Unit,
     onDenied: () -> Unit,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     var permissionGranted by remember { mutableStateOf(false) }
-    var permissionChecked by remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         permissionGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
                 || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        permissionChecked = true
         if (permissionGranted) onGranted() else onDenied()
     }
 
-    // Check on first composition; launch dialog if needed
-    LaunchedEffect(Unit) {
+    // Check on first composition(Unit) and retryTrigger for retries; launch dialog if needed
+    LaunchedEffect(Unit, retryTrigger) {
         permissionGranted = PermissionUtil.hasLocationPermission(context)
         if (permissionGranted) {
-            permissionChecked = true
             onGranted()
         } else {
             launcher.launch(
@@ -132,12 +173,5 @@ private fun PermissionGate(
         }
     }
 
-    when {
-        // Permission confirmed — show real content
-        permissionGranted -> content()
-
-        // Dialog was dismissed with denial — content layer handles the state
-        permissionChecked && !permissionGranted -> content()
-
-    }
+    content()
 }

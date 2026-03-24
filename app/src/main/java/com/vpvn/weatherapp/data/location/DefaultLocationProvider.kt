@@ -15,24 +15,20 @@ class DefaultLocationProvider @Inject constructor(
 ) : LocationProvider {
 
     @SuppressLint("MissingPermission")
-    override suspend fun getLastLocation(): LocationCoordinates =
+    override suspend fun getLastLocation(): LocationCoordinates? =
         suspendCancellableCoroutine { continuation ->
 
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location ->
                     if (continuation.isActive) {
-                        if (location != null) {
-                            continuation.resume(
+                        continuation.resume(
+                            location?.let {
                                 LocationCoordinates(
                                     latitude = location.latitude,
                                     longitude = location.longitude
                                 )
-                            )
-                        } else {
-                            continuation.resumeWithException(
-                                IllegalStateException("Location is null")
-                            )
-                        }
+                            }
+                        )
                     }
                 }
                 .addOnFailureListener { exception ->
@@ -43,7 +39,7 @@ class DefaultLocationProvider @Inject constructor(
         }
 
     @SuppressLint("MissingPermission")
-    override suspend fun getCurrentLocation(): LocationCoordinates =
+    override suspend fun getCurrentLocation(): LocationCoordinates? =
         suspendCancellableCoroutine { continuation ->
 
             val cancellationTokenSource = CancellationTokenSource()
@@ -54,18 +50,14 @@ class DefaultLocationProvider @Inject constructor(
             ).addOnSuccessListener { location ->
 
                 if (continuation.isActive) {
-                    if (location != null) {
-                        continuation.resume(
+                    continuation.resume(
+                        location?.let {
                             LocationCoordinates(
                                 latitude = location.latitude,
                                 longitude = location.longitude
                             )
-                        )
-                    } else {
-                        continuation.resumeWithException(
-                            IllegalStateException("Location is null")
-                        )
-                    }
+                        }
+                    )
                 }
             }.addOnFailureListener { exception ->
                 if (continuation.isActive) {

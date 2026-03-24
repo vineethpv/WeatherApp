@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">WeatherApp</string>
-    <string name="something_went_wrong">Error: </string>
+    <string name="error">Error: </string>
     <string name="_5_day_forecast">5 Day Forecast</string>
+    <string name="location_is_turned_off">Location is turned off</string>
+    <string name="unable_to_get_location">Unable to get location</string>
+    <string name="location_permission_denied">Location permission denied</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="retry">Retry</string>
 </resources>

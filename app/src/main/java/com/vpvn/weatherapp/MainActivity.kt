@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.vpvn.weatherapp.AppLogger.logger
 import com.vpvn.weatherapp.ui.forecast.WeatherScreen
 import com.vpvn.weatherapp.ui.theme.WeatherAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,6 +21,25 @@ class MainActivity : ComponentActivity() {
             WeatherAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     WeatherScreen(paddingValues = innerPadding)
+                    logger.d(
+                        "MainActivity",
+                        "WeatherScreen1 :: User1 vineeth@gmail.com authenticated with token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTYifQ.signature123"
+                    )
+
+                    logger.d(
+                        "MainActivity",
+                        "WeatherScreen2 :: User2 vineeth@gmail.com authenticated with token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTYifQ.signature123"
+                    )
+
+                    logger.d(
+                        "MainActivity",
+                        "WeatherScreen3 :: User3 vineeth@gmail.com authenticated with token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTYifQ.signature123"
+                    )
+
+                    logger.d(
+                        "MainActivity",
+                        "WeatherScreen4 :: User4 vineeth@gmail.com authenticated with token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTYifQ.signature123"
+                    )
                 }
             }
         }

@@ -26,3 +26,4 @@ rootProject.name = "WeatherApp"
 include(":app")
 include(":securelogger")
 include(":analyticssdk")
+include(":designsystem")
